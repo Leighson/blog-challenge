@@ -40,7 +40,7 @@ async function mongoConnect() {
   } catch (err) {
     console.log(err);
   } finally {
-    console.log(`Connection to database ${DATABASE} successful.`)
+    console.log(`Connection to database ${_.capitalize(DATABASE)} successful.`)
   }
 };
 
@@ -75,13 +75,11 @@ app.get('/', async (req, res) => {
   }
 
   posts.forEach(post => {
-    console.log(`TITLE: ${post.title}`);
-    console.log(`CONTENT: ${post.content}`);
     post["titleRequest"] = (_.kebabCase(post.title)); // title request key used to define url param for "/posts" get
   });
 
   res.render('home', {
-    posts: posts
+    posts: posts // used to iterate through posts
   });
 });
 
@@ -121,11 +119,11 @@ app.post('/compose', async (req, res) => {
     const post = new Post({
       title: _.startCase(_.camelCase(req.body.postTitle)),
       content: req.body.postContent });
-    await post.save();
+    await post.save(); // insert one doesn't exist because of this method call
   } catch (err) {
     console.log(err);
   } finally {
-    res.redirect("/");
+    res.redirect("/"); // always redirects to home page after post submission
   }
 
 });

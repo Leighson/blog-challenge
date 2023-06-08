@@ -11,7 +11,7 @@
                     <input type="text" class="form-control" id="postTitle" name="postTitle" placeholder="Post Title" autofocus>
                 </div>
                 <div class="input-field">
-                    <label for="postContent" class="form-label">Post</label>
+                    <label for="postContent" class="form-label">Post (<span id="char-counter">0</span>)</label>
                     <textarea class="form-control" id="postContent" name="postContent"" rows="3" placeholder="Enter post content here."></textarea>
                 </div>
             </div>
@@ -20,5 +20,7 @@
         </form>
 
     </div>
+
+    <script src="/js/compose.js"></script>
 
 <%- include('partials/footer') -%>
