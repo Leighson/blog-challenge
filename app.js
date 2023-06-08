@@ -1,94 +1,126 @@
-const express = require("express");
+/***** MODULES *****/
+
+
+
+/* SET EXPRESS & OPTIONS */
 const bodyParser = require("body-parser");
-const ejs = require("ejs");
-const _ = require("lodash");
-
-const aboutContent = "Hac habitasse platea dictumst vestibulum rhoncus est pellentesque. Dictumst vestibulum rhoncus est pellentesque elit ullamcorper. Non diam phasellus vestibulum lorem sed. Platea dictumst quisque sagittis purus sit. Egestas sed sed risus pretium quam vulputate dignissim suspendisse. Mauris in aliquam sem fringilla. Semper risus in hendrerit gravida rutrum quisque non tellus orci. Amet massa vitae tortor condimentum lacinia quis vel eros. Enim ut tellus elementum sagittis vitae. Mauris ultrices eros in cursus turpis massa tincidunt dui.";
-
-const contactContent = "Scelerisque eleifend donec pretium vulputate sapien. Rhoncus urna neque viverra justo nec ultrices. Arcu dui vivamus arcu felis bibendum. Consectetur adipiscing elit duis tristique. Risus viverra adipiscing at in tellus integer feugiat. Sapien nec sagittis aliquam malesuada bibendum arcu vitae. Consequat interdum varius sit amet mattis. Iaculis nunc sed augue lacus. Interdum posuere lorem ipsum dolor sit amet consectetur adipiscing elit. Pulvinar elementum integer enim neque. Ultrices gravida dictum fusce ut placerat orci nulla. Mauris in aliquam sem fringilla ut morbi tincidunt. Tortor posuere ac ut consequat semper viverra nam libero.";
-
+const express = require("express");
 const app = express();
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static("public"));
 
-require('dotenv').config();
+/* SET RENDER ENGINE */
+require("ejs");
+app.set('view engine', 'ejs');
+
+/* OTHER MODULES */
+require("dotenv").config();
+const _ = require("lodash");
+const mongoose = require("mongoose");
+
+
+
+/***** DATABASE *****/
+
+
+
+/* CONNECT TO MONGO DATABASE */
 const SERVER_USERID = process.env.ORIGIN_USERID;
 const SERVER_KEY = process.env.ORIGIN_KEY;
-const DATABASE_NAME = "blogEntries";
-
-let posts = [];
-
-const { MongoClient, ServerApiVersion } = require('mongodb');
-const uri = `mongodb+srv://${SERVER_USERID}:${SERVER_KEY}@origin.howe4yr.mongodb.net/${DATABASE_NAME}`;
-const client = new MongoClient(
-  uri, {
-    serverApi: {
-      version: ServerApiVersion.v1,
-      strict: true,
-      deprecationErrors: true,
-    }
-  }
-);
+const URI = `mongodb+srv://origin.howe4yr.mongodb.net/`;
+const DATABASE = "blogEntries";
 
 async function mongoConnect() {
   try {
-    await client.connect();
-    console.log("Connected to mongo client.");
+    await mongoose.connect(URI, {
+      user: SERVER_USERID,
+      pass: SERVER_KEY,
+      dbName: DATABASE
+    })
   } catch (err) {
     console.log(err);
+  } finally {
+    console.log(`Connection to database ${DATABASE} successful.`)
   }
 };
 
-const homePost = new Post({
-  title: "Hello",
-  content: "Lacus vel facilisis volutpat est velit egestas dui id ornare. Semper auctor neque vitae tempus quam. Sit amet cursus sit amet dictum sit amet justo. Viverra tellus in hac habitasse. Imperdiet proin fermentum leo vel orci porta. Donec ultrices tincidunt arcu non sodales neque sodales ut. Mattis molestie a iaculis at erat pellentesque adipiscing. Magnis dis parturient montes nascetur ridiculus mus mauris vitae ultricies. Adipiscing elit ut aliquam purus sit amet luctus venenatis lectus. Ultrices vitae auctor eu augue ut lectus arcu bibendum at. Odio euismod lacinia at quis risus sed vulputate odio ut. Cursus mattis molestie a iaculis at erat pellentesque adipiscing."
-});
+/* DEFINE ODM */
+const PostsSchema = {
+  title: String,
+  content: String
+};
 
-console.log(homePost.title);
-console.log(homePost.content);
+const Post = mongoose.model("Post", PostsSchema);
 
-// set static folder to public, defines access path to styling elements
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static('public'));
-// set render engine as ejs, recognize path to views folder
-app.set('view engine', 'ejs');
 
-// ROOT
-app.get('/', (req, res) => {
+
+/***** PAGES *****/
+
+
+
+/* HOME */
+app.get('/', async (req, res) => {
+
+  const homeStartingContent = new Post({
+    title: "Hello",
+    content: "Lacus vel facilisis volutpat est velit egestas dui id ornare. Semper auctor neque vitae tempus quam. Sit amet cursus sit amet dictum sit amet justo. Viverra tellus in hac habitasse. Imperdiet proin fermentum leo vel orci porta. Donec ultrices tincidunt arcu non sodales neque sodales ut. Mattis molestie a iaculis at erat pellentesque adipiscing. Magnis dis parturient montes nascetur ridiculus mus mauris vitae ultricies. Adipiscing elit ut aliquam purus sit amet luctus venenatis lectus. Ultrices vitae auctor eu augue ut lectus arcu bibendum at. Odio euismod lacinia at quis risus sed vulputate odio ut. Cursus mattis molestie a iaculis at erat pellentesque adipiscing."
+  });
+
+  mongoConnect();
+
+  let posts = [];
+
   res.render('home', {
     homeStartingContent: homeStartingContent,
     posts: posts
   });
 });
 
-// ABOUT
+
+/* ABOUT */
 app.get('/about', (req, res) => {
+
+  const aboutContent = "Hac habitasse platea dictumst vestibulum rhoncus est pellentesque. Dictumst vestibulum rhoncus est pellentesque elit ullamcorper. Non diam phasellus vestibulum lorem sed. Platea dictumst quisque sagittis purus sit. Egestas sed sed risus pretium quam vulputate dignissim suspendisse. Mauris in aliquam sem fringilla. Semper risus in hendrerit gravida rutrum quisque non tellus orci. Amet massa vitae tortor condimentum lacinia quis vel eros. Enim ut tellus elementum sagittis vitae. Mauris ultrices eros in cursus turpis massa tincidunt dui.";
+
   res.render('about', {
     aboutContent: aboutContent
   });
 });
 
-// CONTACT
+
+/* CONTACT */
 app.get('/contact', (req, res) => {
+
+  const contactContent = "Scelerisque eleifend donec pretium vulputate sapien. Rhoncus urna neque viverra justo nec ultrices. Arcu dui vivamus arcu felis bibendum. Consectetur adipiscing elit duis tristique. Risus viverra adipiscing at in tellus integer feugiat. Sapien nec sagittis aliquam malesuada bibendum arcu vitae. Consequat interdum varius sit amet mattis. Iaculis nunc sed augue lacus. Interdum posuere lorem ipsum dolor sit amet consectetur adipiscing elit. Pulvinar elementum integer enim neque. Ultrices gravida dictum fusce ut placerat orci nulla. Mauris in aliquam sem fringilla ut morbi tincidunt. Tortor posuere ac ut consequat semper viverra nam libero.";
+
   res.render('contact', {
     contactContent: contactContent
   });
 });
 
-// COMPOSE
+
+/* COMPOSE */
 app.get('/compose', (req, res) => {
   res.render('compose');
 });
 
-app.post('/compose', (req, res) => {
+app.post('/compose', async (req, res) => {
 
   const composeTitle = req.body.postTitle;
   const composeBody = req.body.postBody;
 
-  const PostsSchema = {
-    title: String,
-    content: String
-  };
-  
-  const Post = mongoose.model("Post", PostsSchema);
+  try {
+    await mongoConnect();
+    
+    const posts = await Post.find();
+
+    posts.forEach(post => {
+      
+    });
+
+  } catch (err) {
+    console.log(err);
+  }
 
   const post = {
     title: req.body.postTitle,
