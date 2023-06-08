@@ -77,7 +77,8 @@ app.get('/', async (req, res) => {
   posts.forEach(post => {
     console.log(`TITLE: ${post.title}`);
     console.log(`CONTENT: ${post.content}`);
-  })
+    post["titleRequest"] = (_.kebabCase(post.title)); // title request key used to define url param for "/posts" get
+  });
 
   res.render('home', {
     posts: posts
@@ -114,43 +115,35 @@ app.get('/compose', (req, res) => {
 
 app.post('/compose', async (req, res) => {
 
-  const composeTitle = req.body.postTitle;
-  const composeBody = req.body.postBody;
+  await mongoConnect();
 
   try {
-    await mongoConnect();
-    
-    const posts = await Post.find();
-
-    posts.forEach(post => {
-      
-    });
-
+    const post = new Post({
+      title: _.startCase(_.camelCase(req.body.postTitle)),
+      content: req.body.postContent });
+    await post.save();
   } catch (err) {
     console.log(err);
+  } finally {
+    res.redirect("/");
   }
-
-  const post = {
-    title: req.body.postTitle,
-    titleRequest: _.kebabCase(req.body.postTitle),
-    body: req.body.postBody
-  };
-
-  posts.push(post);
-  res.redirect('/');
 
 });
 
 // POSTS
-app.get('/posts/:postTitle', (req, res) => {
-  posts.forEach( (post) => {
-    if (_.lowerCase(req.params.postTitle) === _.lowerCase(post.title)) {
-      res.render('post', {
-        postTitle: post.title,
-        postBody: post.body
-      });
-    }
+app.get('/posts/:postTitle', async (req, res) => {
+
+  const post = await Post.findOne({
+    title: _.startCase(_.camelCase(req.params.postTitle))
   });
+
+  console.log(post);
+
+  res.render('post', {
+    postTitle: post.title,
+    postContent: post.content
+  });
+
 });
 
 
