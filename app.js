@@ -68,10 +68,18 @@ app.get('/', async (req, res) => {
 
   mongoConnect();
 
-  let posts = [];
+  const posts = await Post.find();
+
+  if (posts.length === 0) {
+    await Post.insertMany( homeStartingContent )
+  }
+
+  posts.forEach(post => {
+    console.log(`TITLE: ${post.title}`);
+    console.log(`CONTENT: ${post.content}`);
+  })
 
   res.render('home', {
-    homeStartingContent: homeStartingContent,
     posts: posts
   });
 });
