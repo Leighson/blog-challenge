@@ -25,9 +25,9 @@ const mongoose = require("mongoose");
 
 
 /* CONNECT TO MONGO DATABASE */
+const URI = `mongodb+srv://origin.howe4yr.mongodb.net/`;
 const SERVER_USERID = process.env.ORIGIN_USERID;
 const SERVER_KEY = process.env.ORIGIN_KEY;
-const URI = `mongodb+srv://origin.howe4yr.mongodb.net/`;
 const DATABASE = "blogEntries";
 
 async function mongoConnect() {
@@ -70,7 +70,7 @@ app.get('/', async (req, res) => {
 
   const posts = await Post.find();
 
-  if (posts.length === 0) {
+  if (posts.length === 0 || posts === null) {
     await Post.insertMany( homeStartingContent )
   }
 
@@ -128,7 +128,7 @@ app.post('/compose', async (req, res) => {
 
 });
 
-// POSTS
+/* DYNAMIC POST URLS */
 app.get('/posts/:postTitle', async (req, res) => {
 
   const post = await Post.findOne({
